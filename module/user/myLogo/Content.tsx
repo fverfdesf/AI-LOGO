@@ -5,7 +5,7 @@ import { FaDownLong } from "react-icons/fa6";
 import { useGetLogoQuery } from '@/lib/api/logoApi';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAppSelector } from '@/lib/hooks';
-import TokenInvalid from '@/components/tokenInvalid';
+import TokenInvalid from "@/components/TokenInvalid";
 import useTokenInvalid from '@/hooks/useTokenInvalid';
 const Content = () => {
   const isTokenInvalid = useAppSelector(state => state.userReducer.isTokenInvalid)

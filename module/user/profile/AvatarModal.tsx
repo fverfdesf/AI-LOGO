@@ -94,7 +94,7 @@ const AvatarModal = ({ originImage, setOriginImage, fileRef }: { originImage: st
 
     return (
         <>
-            {isShowMsg && <MsgAlert setIsShowMsg={setIsShowMsg} icon={<FaCircleXmark className="!text-red-700" />} title={resData?.code ? <span className='text-green-700'>上傳成功</span> : <span className="text-red-700">上傳失敗</span>}>{!data?.code && data?.message !== "" && <span className='text-red-700'>{data?.message}</span>}</MsgAlert>}
+            {isShowMsg && <MsgAlert setIsShowMsg={setIsShowMsg} icon={<FaCircleXmark className="!text-red-700" />} title={resData?.code ? <span className='text-green-700'>上傳成功</span> : <span className="text-red-700">上傳失敗</span>}>{!resData?.code && resData?.message !== "" && <span className='text-red-700'>{resData?.message}</span>}</MsgAlert>}
             <div className='absolute top-0 left-0 right-0 bottom-0 bg-black/25' onClick={closeAvatarModal}></div>
             <div className='absolute left-1/2 top-1/2 -translate-1/2 bg-background border-2 border-white  py-2 rounded-lg w-[500px] '>
                 <div className='relative text-center mb-2'>

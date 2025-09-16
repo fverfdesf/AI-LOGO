@@ -11,7 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { useProfileEditMutation } from '@/lib/api/userApi';
 import { useAppSelector } from '@/lib/hooks';
-import TokenInvalid from '@/components/tokenInvalid';
+import TokenInvalid from "@/components/TokenInvalid";
 import useTokenInvalid from '@/hooks/useTokenInvalid';
 const profileSchema = z.object({
   nickName: z.string()

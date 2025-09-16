@@ -9,7 +9,7 @@ import { useAppSelector, useAppDispatch } from "@/lib/hooks";
 import { setIsShowLogin } from "@/lib/slice/userSlice";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import TokenInvalid from '@/components/tokenInvalid';
+import TokenInvalid from "@/components/TokenInvalid";
 import useTokenInvalid from "@/hooks/useTokenInvalid";
 const Content = () => {
   const { data } = useSession()

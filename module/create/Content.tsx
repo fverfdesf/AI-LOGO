@@ -17,8 +17,8 @@ import { useGenerateLogoMutation } from "@/lib/api/logoApi";
 import MsgAlert from "@/components/MsgAlert";
 import { FaCircleCheck } from "react-icons/fa6";
 import { useAppSelector } from '@/lib/hooks';
-import TokenInvalid from '@/components/tokenInvalid';
 import useTokenInvalid from "@/hooks/useTokenInvalid";
+import TokenInvalid from "@/components/TokenInvalid";
 const step1Schema = z.object({
   logoTitle: z.string().min(1, "欄位不能為空")
 });
@@ -69,8 +69,8 @@ const Content = () => {
         stepSchema = step4Schema;
         break;
     }
-
-    let isSuccess = await formMethod.trigger(Object.keys(stepSchema.shape));
+    if(!stepSchema) return
+    let isSuccess = await formMethod.trigger(Object.keys(stepSchema.shape) as ("logoTitle" | "logoDesc" | "logoColorPallette" | "logoDesign")[]);
     if (isSuccess) {
       setStep(step + 1);
     }

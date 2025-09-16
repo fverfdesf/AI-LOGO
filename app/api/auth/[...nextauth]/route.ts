@@ -6,6 +6,7 @@ import UserModel from "@/Models/User";
 import jwt from 'jsonwebtoken';
 import { MongooseError } from "mongoose";
 import getAccessToken from "@/lib/getAccessToken";
+import type { Session } from "next-auth";
 let handler = NextAuth({
   secret: process.env.NEXTAUTH_JWT_KEY,
   providers: [
@@ -90,36 +91,43 @@ let handler = NextAuth({
       if (user) {
         let accessToken = jwt.sign(user, process.env.JWT_KEY as string, { expiresIn: "1m" })
         let refreshToken = jwt.sign(user, process.env.JWT_KEY as string, { expiresIn: "2m" })
-        token = {...token, accessToken, refreshToken, user}
+        token = { ...token, accessToken, refreshToken, user }
         return token
       }
       if (token.error) {
         return token;
       }
-      if(trigger === "update" && session && token.user){
-        token.user = {...token.user, ...session}
-         return token
+      if (trigger === "update" && session && token.user) {
+        token.user = { ...token.user, ...session }
+        return token
       }
       try {
         let payload = jwt.verify(token.accessToken as string, process.env.JWT_KEY as string)
         return token;
       } catch (e) {
-        let { accessToken, error } = await getAccessToken(token.refreshToken as string);
-        if (error) {
-          token = {
-            error
-          }
+        if (!token.refreshToken) {
+          token.error = "token不存在";
           return token;
         }
-        token.accessToken = accessToken;
-        return token
+
+        try {
+          let { accessToken, error } = await getAccessToken(token.refreshToken as string);
+          if (error) {
+            token.error = error
+            return token;
+          }
+          token.accessToken = accessToken as string;
+          delete token.error;
+          return token
+        } catch (err) {
+          token.error = "token失效";
+          return token
+        }
       }
     },
     session: ({ session, token }) => {
-      console.log("session callback token", token)
-      console.log('session callback session', session)
       console.log("觸發session回調")
-       if (token.error) {
+      if (token.error) {
         session.error = token.error as string;
       }
       if (token.user) session.user = token.user
