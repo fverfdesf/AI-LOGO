@@ -89,8 +89,8 @@ let handler = NextAuth({
       console.log("觸發jwt回調")
       console.log("token", token)
       if (user) {
-        let accessToken = jwt.sign(user, process.env.JWT_KEY as string, { expiresIn: "1m" })
-        let refreshToken = jwt.sign(user, process.env.JWT_KEY as string, { expiresIn: "2m" })
+        let accessToken = jwt.sign(user, process.env.JWT_KEY as string, { expiresIn: "15m" })
+        let refreshToken = jwt.sign(user, process.env.JWT_KEY as string, { expiresIn: "7d" })
         token = { ...token, accessToken, refreshToken, user }
         return token
       }
