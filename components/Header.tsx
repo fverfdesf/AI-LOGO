@@ -30,7 +30,7 @@ const Header = () => {
         </div>
         {
           status === 'authenticated' && !session.error &&
-          <div className="w-12 mr-2 cursor-pointer relative" onClick={()=>{router.push('/user/profile')}}>
+          <div className="w-12 h-12 rounded-full overflow-hidden mr-2 cursor-pointer relative" onClick={()=>{router.push('/user/profile')}}>
             <Image
               src={avatarPath}
               alt="logo"
