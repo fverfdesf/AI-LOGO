@@ -12,17 +12,38 @@ const Content = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const dataCount = 50; //每次50筆
   const { data: resData, isLoading } = useGetLogoQuery({ page: currentPage, dataCount })
-  useTokenInvalid(resData ? {code: resData.code, message: resData.message} : {});
-  const [allData, setAllData] = useState<{_id:string ,imageUrl: string}[]>([])
+  useTokenInvalid(resData ? { code: resData.code, message: resData.message } : {});
+  const [allData, setAllData] = useState<{ _id: string, imageUrl: string }[]>([])
   const containerRef = useRef<HTMLDivElement | null>(null);
   const loadingRef = useRef<HTMLDivElement | null>(null);
   const loadCards = Array.from(Array(10));
+
+  const downloadImg = async (imgUrl: string) => {
+    try {
+      let res = await fetch(imgUrl)
+      let blob = await res.blob();
+      let blobUrl = URL.createObjectURL(blob);
+      let a = document.createElement('a');
+      let filePathArr = imgUrl.split("/");
+      let filename = filePathArr[filePathArr.length - 1];
+      a.href = blobUrl;
+      a.setAttribute('download', filename);
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl)
+    } catch (err) {
+      alert("下載失敗")
+    }
+
+  }
+
   useEffect(() => {
     if (loadingRef.current) {
       let observer = new IntersectionObserver((entry) => {
         if (entry[0].isIntersecting) {
           let nextPage = currentPage + 1;
-          if(nextPage === resData?.data?.totalPage && loadingRef.current){
+          if (nextPage === resData?.data?.totalPage && loadingRef.current) {
             observer.unobserve(loadingRef.current)
           }
           setCurrentPage(nextPage)
@@ -39,14 +60,14 @@ const Content = () => {
     }
   }, [resData?.data?.totalPage])
 
-  useEffect(()=>{
+  useEffect(() => {
     let dataCount = resData?.data?.logoData?.length || 0
-    if(dataCount > 0){
-      setAllData(prev => { 
+    if (dataCount > 0) {
+      setAllData(prev => {
         let existingIds = prev.map(item => item._id);
         let newData = resData?.data?.logoData.filter(item => !existingIds.includes(item._id));
-        if(newData && newData.length > 0){
-         return [...prev, ...newData]; 
+        if (newData && newData.length > 0) {
+          return [...prev, ...newData];
         }
         return prev
       })
@@ -59,7 +80,7 @@ const Content = () => {
       <div className='flex items-start flex-wrap'>
         {isLoading && loadCards.map((item, i) => (
           <div key={i} className='w-[200px] h-[250px] rounded-b-sm mr-4 mb-5'>
-            <Skeleton className='w-full h-full'/>
+            <Skeleton className='w-full h-full' />
           </div>
         ))}
         {allData.map(item => (
@@ -68,7 +89,7 @@ const Content = () => {
               <Image src={item.imageUrl} alt="logo" width={1024} height={1024} className='max-w-full' />
             </div>
             <div className='py-1 text-center flex justify-center'>
-              <a href={item.imageUrl} download className='group p-1 border border-foreground/50 rounded-sm cursor-pointer hover:bg-foreground/50'><FaDownLong className='text-foreground/50 group-hover:text-background' /></a>
+              <span onClick={() => downloadImg(item.imageUrl)} className='group p-1 border border-foreground/50 rounded-sm cursor-pointer hover:bg-foreground/50'><FaDownLong className='text-foreground/50 group-hover:text-background' /></span>
             </div>
           </div>)
         )}
