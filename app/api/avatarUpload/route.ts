@@ -1,9 +1,8 @@
-import { mkdir, writeFile } from "fs/promises";
 import { NextResponse, NextRequest } from "next/server";
-import path from "path";
 import { getToken } from "next-auth/jwt";
 import { connectDB } from "@/lib/mongodb";
 import UserModel from "@/Models/User";
+import { put } from '@vercel/blob';
 export async function POST(req: NextRequest) {
     let token = await getToken({ req, secret: process.env.NEXTAUTH_JWT_KEY });
     //這邊判斷是因為執行getToken時，他會在執行nextauth的jwt callback，而jwt返回的值可能會包含token.error，所以需要判斷
@@ -28,18 +27,26 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ code: 0, message: '檔案太大，需小於5MB', data: null })
     }
 
-    const arrayBuffer = await avatar.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    // 定義儲存路徑
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    await mkdir(uploadDir, { recursive: true });
-    const fileName = `${Math.floor(Math.random() * 9999)}${Date.now()}${Math.floor(Math.random() * 9999)}.${avatar.type.split('/')[1]}`;
-    const filePath = path.join(uploadDir, fileName)
-    const publicPath = `/uploads/${fileName}`
-    await writeFile(filePath, buffer)
     try {
+        const fileName = `avatars/${Math.floor(Math.random() * 9999)}${Date.now()}${Math.floor(Math.random() * 9999)}.${avatar.type.split('/')[1]}`;
+        const blob = await put(
+            fileName,
+            avatar,
+            {
+                access: 'public',
+            }
+        );
+
         await connectDB();
-        await UserModel.updateOne({_id: token.user?.id}, {avatar: publicPath}).exec();
+        await UserModel.updateOne({ _id: token.user?.id }, { avatar: blob.url }).exec();
+
+        return NextResponse.json({
+        code: 1,
+        message: "頭像上傳成功",
+        data: {
+            imageURL: blob.url
+        }
+    })
     } catch (err) {
         return NextResponse.json({
             code: 0,
@@ -47,11 +54,5 @@ export async function POST(req: NextRequest) {
             data: null
         })
     }
-    return NextResponse.json({
-        code: 1,
-        message: "頭像上傳成功",
-        data: {
-            imageURL: publicPath
-        }
-    })
+    
 }

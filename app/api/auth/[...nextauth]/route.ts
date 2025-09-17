@@ -6,7 +6,6 @@ import UserModel from "@/Models/User";
 import jwt from 'jsonwebtoken';
 import { MongooseError } from "mongoose";
 import getAccessToken from "@/lib/getAccessToken";
-import type { Session } from "next-auth";
 let handler = NextAuth({
   secret: process.env.NEXTAUTH_JWT_KEY,
   providers: [

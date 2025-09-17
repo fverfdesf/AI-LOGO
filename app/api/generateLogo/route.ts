@@ -1,11 +1,10 @@
 import { NextResponse, NextRequest } from "next/server";
 import type { LogoCreate } from "@/module/create/Content";
 import { GoogleGenAI } from '@google/genai';
-import path from "path";
-import { mkdir, writeFile } from "fs/promises";
 import { getToken } from "next-auth/jwt";
 import AILogoModel from "@/Models/AILogo";
 import { connectDB } from "@/lib/mongodb";
+import { put } from "@vercel/blob";
 function promptTem(data: LogoCreate) {
     let jsonStr = JSON.stringify(data);
     let prompt = `You are an expert AI Prompt Engineer for a Logo Generation service. Your sole function is to convert the following structured JSON data into a single, high-quality, descriptive image generation prompt suitable for a model like Stable Diffusion XL.
@@ -114,21 +113,28 @@ export async function POST(req: NextRequest) {
     }
 
     let imageBuffer = Buffer.from(arrayBuffer);
-    // 定義儲存路徑
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    await mkdir(uploadDir, { recursive: true });
 
-    //定義圖片檔名並連結成一個完整的圖片路徑
-    const fileName = `aig_logo_${Date.now()}.png`;
-    const filePath = path.join(uploadDir, fileName);
-
-    // 將 Buffer 寫入檔案系統
-    await writeFile(filePath, imageBuffer);
-    const publicUrl = `/uploads/${fileName}`;
     try {
+        const fileName = `aiLogo/${Math.floor(Math.random() * 9999)}${Date.now()}${Math.floor(Math.random() * 9999)}.png`;
+        const blob = await put(
+            fileName,
+            imageBuffer,
+            {
+                access: 'public',
+            }
+        );
+
         await connectDB();
-        let aiLogoDoc = new AILogoModel({ userId: token?.user?.id, imageUrl: publicUrl });
+        let aiLogoDoc = new AILogoModel({ userId: token?.user?.id, imageUrl: blob.url });
         await aiLogoDoc.save();
+
+        return NextResponse.json({
+            code: 1,
+            message: "生成成功",
+            data: {
+                url: blob.url
+            }
+        })
     } catch (e) {
         return NextResponse.json({
             code: 0,
@@ -136,13 +142,5 @@ export async function POST(req: NextRequest) {
             data: null
         })
     }
-
-    return NextResponse.json({
-        code: 1,
-        message: "生成成功",
-        data: {
-            url: publicUrl
-        }
-    })
 }
 
